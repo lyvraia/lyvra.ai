@@ -1,81 +1,76 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/png" href="favicon.png">
-    <title>Login • Lyvra</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login • Lyvra</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Supabase JS (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
-
 <body class="bg-white flex items-center justify-center min-h-screen p-6">
-    <div class="w-full max-w-md mx-auto text-center">
+  <div class="w-full max-w-md mx-auto text-center">
+    <img src="logo.png" alt="Lyvra Logo" class="mx-auto w-40 mb-10">
+    <h1 class="text-3xl font-bold text-gray-900 mb-3">Bem-vindo</h1>
+    <p class="text-gray-500 mb-10">Entre para continuar</p>
 
-        <img src="logo.png" alt="Lyvra Logo" class="mx-auto w-40 mb-10">
+    <div id="errorBox" class="hidden bg-red-100 text-red-700 px-4 py-2 rounded mb-4 text-sm"></div>
 
-        <h1 class="text-3xl font-bold text-gray-900 mb-3">Bem-vindo</h1>
-        <p class="text-gray-500 mb-10">Entre para continuar</p>
+    <!-- Botões -->
+    <button id="appleLogin" class="w-full flex items-center justify-center gap-3 border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 py-3 rounded-xl font-medium transition mb-3">
+      <img src="apple-logo.png" alt="Apple Login" class="w-5 h-5"> Entrar com Apple
+    </button>
 
-        <div id="errorBox" class="hidden bg-red-100 text-red-700 px-4 py-2 rounded mb-4 text-sm"></div>
+    <button id="googleLogin" class="w-full flex items-center justify-center gap-3 border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 py-3 rounded-xl font-medium transition mb-3">
+      <img src="google-logo.png" alt="Google Login" class="w-5 h-5"> Entrar com Google
+    </button>
 
-        <!-- Botão Apple -->
-        <button id="appleLogin" class="w-full flex items-center justify-center gap-3 border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 py-3 rounded-xl font-medium transition mb-3">
-            <img src="apple-logo.png" alt="Apple Login" class="w-5 h-5"> 
-            Entrar com Apple
-        </button>
-
-        <!-- Botão Google -->
-        <button id="googleLogin" class="w-full flex items-center justify-center gap-3 border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 py-3 rounded-xl font-medium transition mb-3">
-            <img src="google-logo.png" alt="Google Login" class="w-5 h-5"> 
-            Entrar com Google
-        </button>
-
-        <p class="text-sm text-gray-400">Ao continuar, você concorda com os Termos de Uso da Lyvra.</p>
-    </div>
+    <p class="text-sm text-gray-400">Ao continuar, você concorda com os Termos de Uso da Lyvra.</p>
+  </div>
 
 <script>
-    // ==========================
-    // 1. Capturar redirect da URL
-    // ==========================
+  // ========== Substitua abaixo pelas suas chaves (APENAS PARA TESTE) ==========
+  const SUPABASE_URL = "https://YOUR_SUPABASE_PROJECT.supabase.co"; // ex: https://abc123.supabase.co
+  const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+  // ===========================================================================
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const redirect = urlParams.get("redirect") || "/dashboard";
+  // inicializa o client (CDN expõe window.supabase)
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ==========================
-    // 2. Inicializar Supabase
-    // ==========================
+  // pega redirect da query string (ex: ?redirect=/checkout?plan=pro)
+  const urlParams = new URLSearchParams(window.location.search);
+  const redirect = urlParams.get("redirect") || "/dashboard";
 
-    const SUPABASE_URL = window.env?.SUPABASE_URL;
-    const SUPABASE_KEY = window.env?.SUPABASE_ANON_KEY;
+  const errorBox = document.getElementById("errorBox");
+  function showError(msg) {
+    errorBox.textContent = msg;
+    errorBox.classList.remove("hidden");
+  }
 
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  async function socialLogin(provider) {
+    try {
+      // para OAuth via Supabase vamos usar redirectTo para voltar ao callback
+      const options = {
+        redirectTo: window.location.origin + "/auth/callback?redirect=" + encodeURIComponent(redirect)
+      };
 
-    const errorBox = document.getElementById("errorBox");
+      const { error } = await supabaseClient.auth.signInWithOAuth({ provider, options });
 
-    function showError(msg) {
-        errorBox.textContent = msg;
-        errorBox.classList.remove("hidden");
+      if (error) {
+        showError(error.message);
+        console.error("Supabase login error:", error);
+      } else {
+        // normalmente o navegador é redirecionado automaticamente para o provider
+        console.log("OAuth flow started for provider:", provider);
+      }
+    } catch (err) {
+      showError(err.message || "Erro desconhecido");
+      console.error(err);
     }
+  }
 
-    // ==========================
-    // 3. Fazer login social
-    // ==========================
-    async function socialLogin(provider) {
-        const { data, error } = await supabaseClient.auth.signInWithOAuth({
-            provider: provider,
-            options: {
-                redirectTo: window.location.origin + "/auth/callback?redirect=" + encodeURIComponent(redirect)
-            }
-        });
-
-        if (error) showError(error.message);
-    }
-
-    // Botões
-    document.getElementById("appleLogin").onclick = () => socialLogin("apple");
-    document.getElementById("googleLogin").onclick = () => socialLogin("google");
+  document.getElementById("googleLogin").addEventListener("click", () => socialLogin("google"));
+  document.getElementById("appleLogin").addEventListener("click", () => socialLogin("apple"));
 </script>
-
 </body>
 </html>
