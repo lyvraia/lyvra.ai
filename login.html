@@ -48,27 +48,30 @@
   }
 
   async function socialLogin(provider) {
-    try {
-      // para OAuth via Supabase vamos usar redirectTo para voltar ao callback
-      const options = {
-        redirectTo: window.location.origin + "/auth/callback?redirect=" + encodeURIComponent(redirect)
-      };
+  try {
+    const redirectUrl =
+      window.location.origin +
+      "/auth/callback?redirect=" +
+      encodeURIComponent(redirect);
 
-      const { error } = await supabaseClient.auth.signInWithOAuth({ provider, options });
-
-      if (error) {
-        showError(error.message);
-        console.error("Supabase login error:", error);
-      } else {
-        // normalmente o navegador é redirecionado automaticamente para o provider
-        console.log("OAuth flow started for provider:", provider);
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+      provider: provider,
+      options: {
+        redirectTo: redirectUrl
       }
-    } catch (err) {
-      showError(err.message || "Erro desconhecido");
-      console.error(err);
-    }
-  }
+    });
 
+    if (error) {
+      console.error(error);
+      showError("Erro no login: " + error.message);
+    } else {
+      console.log("Redirecionando para:", redirectUrl);
+    }
+  } catch (err) {
+    console.error(err);
+    showError(err.message || "Erro desconhecido");
+  }
+}
   document.getElementById("googleLogin").addEventListener("click", () => socialLogin("google"));
   document.getElementById("appleLogin").addEventListener("click", () => socialLogin("apple"));
 </script>
