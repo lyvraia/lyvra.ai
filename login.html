@@ -28,52 +28,37 @@
     <p class="text-sm text-gray-400">Ao continuar, você concorda com os Termos de Uso da Lyvra.</p>
   </div>
 
-<script>
-  // ========== Substitua abaixo pelas suas chaves (APENAS PARA TESTE) ==========
-  const SUPABASE_URL = "https://xtosrvncufbgjjtpyivu.supabase.co"; // ex: https://abc123.supabase.co
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+  const SUPABASE_URL = "https://xtosrvncufbgjjtpyivu.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0b3Nydm5jdWZiZ2pqdHB5aXZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MjAzNzQsImV4cCI6MjA3ODk5NjM3NH0.ctwEXq0YohKqYiyvysuZEyjsMXuxJGn-vYZAbklEXSs";
-  // ===========================================================================
 
-  // inicializa o client (CDN expõe window.supabase)
-  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // pega redirect da query string (ex: ?redirect=/checkout?plan=pro)
   const urlParams = new URLSearchParams(window.location.search);
   const redirect = urlParams.get("redirect") || "/dashboard";
 
-  const errorBox = document.getElementById("errorBox");
-  function showError(msg) {
-    errorBox.textContent = msg;
-    errorBox.classList.remove("hidden");
-  }
-
-  async function socialLogin(provider) {
-  try {
+  window.socialLogin = async function (provider) {
     const redirectUrl =
       window.location.origin +
       "/auth/callback?redirect=" +
       encodeURIComponent(redirect);
 
-    const { data, error } = await supabaseClient.auth.signInWithOAuth({
-      provider: provider,
+    console.log("Using redirectTo:", redirectUrl);
+
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+      provider,
       options: {
         redirectTo: redirectUrl
       }
     });
 
     if (error) {
-      console.error(error);
-      showError("Erro no login: " + error.message);
-    } else {
-      console.log("Redirecionando para:", redirectUrl);
+      console.error("Login error:", error);
+      alert("Erro: " + error.message);
     }
-  } catch (err) {
-    console.error(err);
-    showError(err.message || "Erro desconhecido");
-  }
-}
-  document.getElementById("googleLogin").addEventListener("click", () => socialLogin("google"));
-  document.getElementById("appleLogin").addEventListener("click", () => socialLogin("apple"));
+  };
 </script>
 </body>
 </html>
