@@ -32,34 +32,39 @@
 <script type="module">
   import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
+  // Credenciais Supabase
   const SUPABASE_URL = "https://xtosrvncufbgjjtpyivu.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0b3Nydm5jdWZiZ2pqdHB5aXZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MjAzNzQsImV4cCI6MjA3ODk5NjM3NH0.ctwEXq0YohKqYiyvysuZEyjsMXuxJGn-vYZAbklEXSs";
+  const SUPABASE_ANON_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0b3Nydm5jdWZiZ2pqdHB5aXZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MjAzNzQsImV4cCI6MjA3ODk5NjM3NH0.ctwEXq0YohKqYiyvysuZEyjsMXuxJGn-vYZAbklEXSs";
 
   const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  // Pega o ?redirect=...
   const urlParams = new URLSearchParams(window.location.search);
   const redirect = urlParams.get("redirect") || "/dashboard";
 
-  window.socialLogin = async function (provider) {
+  // Função GLOBAL (fica exposta no window)
+  async function socialLogin(provider) {
     const redirectUrl =
       window.location.origin +
       "/auth/callback?redirect=" +
       encodeURIComponent(redirect);
 
-    console.log("Using redirectTo:", redirectUrl);
+    console.log("Redirecionando para:", redirectUrl);
 
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider,
-      options: {
-        redirectTo: redirectUrl
-      }
+      options: { redirectTo: redirectUrl },
     });
 
     if (error) {
-      console.error("Login error:", error);
+      console.error(error);
       alert("Erro: " + error.message);
     }
-  };
+  }
+
+  // TORNA A FUNÇÃO GLOBAL
+  window.socialLogin = socialLogin;
 </script>
 </body>
 </html>
