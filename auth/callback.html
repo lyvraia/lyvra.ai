@@ -1,68 +1,31 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Autenticando...</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f8f9ff;
-      height: 100vh;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #333;
-      font-size: 1.2rem;
-    }
-  </style>
-</head>
-<body>
-  Processando login...
+<body style="font-family:sans-serif; padding:40px;">
+  <h2>Processando login...</h2>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-    // Supabase credentials (use as mesmas do login.html)
-    const SUPABASE_URL = "https://xtosrvncufbgjjtpyivu.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0b3Nydm5jdWZiZ2pqdHB5aXZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MjAzNzQsImV4cCI6MjA3ODk5NjM3NH0.ctwEXq0YohKqYiyvysuZEyjsMXuxJGn-vYZAbklEXSs";
+    const supabase = createClient(
+      "https://xtosrvncufbgjjtpyivu.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0b3Nydm5jdWZiZ2pqdHB5aXZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MjAzNzQsImV4cCI6MjA3ODk5NjM3NH0.ctwEXq0YohKqYiyvysuZEyjsMXuxJGn-vYZAbklEXSs"
+    );
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // Captura ?redirect=...
     const params = new URLSearchParams(window.location.search);
     const redirect = params.get("redirect") || "/dashboard";
 
-    async function processAuth() {
-      // Verificar sessão atual
-      const { data: { session }, error } = await supabase.auth.getSession();
+    async function process() {
+      const { data } = await supabase.auth.getSession();
 
-      if (error) {
-        alert("Erro ao processar login: " + error.message);
-        window.location.href = "/lyvra.ai/login.html";
+      if (!data.session) {
+        window.location.href = "/login.html";
         return;
       }
 
-      if (!session) {
-        // Em casos raros, precisamos tentar recuperar pelo fragmento (#)
-        const hashParams = new URLSearchParams(window.location.hash.replace("#", ""));
-        const access_token = hashParams.get("access_token");
-
-        if (access_token) {
-          // Hidratar a sessão manualmente caso o Supabase não reconheça automaticamente
-          await supabase.auth.setSession({
-            access_token,
-            refresh_token: hashParams.get("refresh_token")
-          });
-        }
-      }
-
-      // Redireciona para o destino exato
-      window.location.href = "https://lyvraia.github.io/lyvra.ai" + redirect;
+      window.location.href = redirect;
     }
 
-    processAuth();
+    process();
   </script>
 </body>
 </html>
