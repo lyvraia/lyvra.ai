@@ -31,32 +31,32 @@
 <script type="module">
   import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-  // Credenciais Supabase
-  const SUPABASE_URL = "https://xtosrvncufbgjjtpyivu.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0b3Nydm5jdWZiZ2pqdHB5aXZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MjAzNzQsImV4cCI6MjA3ODk5NjM3NH0.ctwEXq0YohKqYiyvysuZEyjsMXuxJGn-vYZAbklEXSs";
-
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const supabase = createClient(
+    "https://xtosrvncufbgjjtpyivu.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0b3Nydm5jdWZiZ2pqdHB5aXZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MjAzNzQsImV4cCI6MjA3ODk5NjM3NH0.ctwEXq0YohKqYiyvysuZEyjsMXuxJGn-vYZAbklEXSs"
+  );
 
   // Pega o redirect passado pela URL
   const params = new URLSearchParams(window.location.search);
   const redirect = params.get("redirect") || "/dashboard";
 
-  // ● Caminho correto para GitHub Pages
-  const BASE = "https://lyvraia.github.io/lyvra.ai";
+  // BASE CORRETA DO GITHUB PAGES
+  const BASE = "https://lyvraia.github.io/lyvraai";
 
-  // ● Callback correto para o Supabase (muito importante)
-  const CALLBACK_URL = `${BASE}/auth/callback?redirect=${encodeURIComponent(redirect)}`;
+  // CALLBACK FINAL
+  const CALLBACK_URL = `${BASE}/auth/callback.html?redirect=${encodeURIComponent(redirect)}`;
 
-  // Torna a função global
-  window.socialLogin = async function(provider) {
-    
-    console.log("OAuth callback:", CALLBACK_URL);
+  console.log("Callback URL gerada:", CALLBACK_URL);
+
+  // TORNA A FUNÇÃO GLOBAL
+  window.socialLogin = async function (provider) {
+    console.log("Iniciando login:", provider);
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: CALLBACK_URL
-      }
+        redirectTo: CALLBACK_URL,
+      },
     });
 
     if (error) {
@@ -64,8 +64,6 @@
       alert("Erro: " + error.message);
     }
   };
-
 </script>
-
 </body>
 </html>
