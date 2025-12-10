@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-   <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="icon" type="image/png" href="favicon.png">
   <title>Login • Lyvra</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
+
 <body class="bg-white flex items-center justify-center min-h-screen p-6">
   <div class="w-full max-w-md mx-auto text-center">
     <img src="logo.png" alt="Lyvra Logo" class="mx-auto w-40 mb-10">
@@ -34,34 +35,37 @@
   const SUPABASE_URL = "https://xtosrvncufbgjjtpyivu.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0b3Nydm5jdWZiZ2pqdHB5aXZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MjAzNzQsImV4cCI6MjA3ODk5NjM3NH0.ctwEXq0YohKqYiyvysuZEyjsMXuxJGn-vYZAbklEXSs";
 
-  const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // Pega o ?redirect=...
-  const urlParams = new URLSearchParams(window.location.search);
-  const redirect = urlParams.get("redirect") || "/dashboard";
+  // Pega o redirect passado pela URL
+  const params = new URLSearchParams(window.location.search);
+  const redirect = params.get("redirect") || "/dashboard";
 
-  // Função GLOBAL (fica exposta no window)
-  async function socialLogin(provider) {
-    const redirectUrl =
-      window.location.origin +
-      "/auth/callback?redirect=" +
-      encodeURIComponent(redirect);
+  // ● Caminho correto para GitHub Pages
+  const BASE = "https://lyvraia.github.io/lyvra.ai";
 
-    console.log("Redirecionando para:", redirectUrl);
+  // ● Callback correto para o Supabase (muito importante)
+  const CALLBACK_URL = `${BASE}/auth/callback?redirect=${encodeURIComponent(redirect)}`;
 
-    const { error } = await supabaseClient.auth.signInWithOAuth({
+  // Torna a função global
+  window.socialLogin = async function(provider) {
+    
+    console.log("OAuth callback:", CALLBACK_URL);
+
+    const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: redirectUrl },
+      options: {
+        redirectTo: CALLBACK_URL
+      }
     });
 
     if (error) {
       console.error(error);
       alert("Erro: " + error.message);
     }
-  }
+  };
 
-  // TORNA A FUNÇÃO GLOBAL
-  window.socialLogin = socialLogin;
 </script>
+
 </body>
 </html>
